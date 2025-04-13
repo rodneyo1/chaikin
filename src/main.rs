@@ -9,6 +9,7 @@ fn main() {
     nannou::app(model).update(update).run();
 }
 
+// Model function to create the initial state of the application(called at start)
 fn model(app: &App) -> Model {
     let window_id = app
         .new_window()
@@ -19,7 +20,7 @@ fn model(app: &App) -> Model {
         .build()
         .unwrap();
 
-    Model {
+    Model { 
         window_id,
         points: Vec::new(),
         algorithm: ChaikinAlgorithm::new(),
@@ -30,6 +31,7 @@ fn model(app: &App) -> Model {
     }
 }
 
+// Update function to handle animation. This function is called every frame and is responsible for updating the model's state
 fn update(_app: &App, model: &mut Model, update: Update) {
     // Only process if we're in animation state
     if model.animation_state == AnimationState::Animating {
@@ -159,11 +161,12 @@ fn view(app: &App, model: &Model, frame: Frame) {
         }
     }
 
-    draw.to_frame(app, &frame).unwrap();
+    draw.to_frame(app, &frame).unwrap(); // Render the frame
 }
 
+// Handle mouse presses: Add points to the model
 fn mouse_pressed(app: &App, model: &mut Model, button: MouseButton) {
-    if app.window_id() == model.window_id
+    if app.window_id() == model.window_id // Ensure we're in the correct window
         && button == MouseButton::Left
         && model.animation_state == AnimationState::Drawing
     {
@@ -172,6 +175,7 @@ fn mouse_pressed(app: &App, model: &mut Model, button: MouseButton) {
     }
 }
 
+// Handle key presses: Escape to quit, Enter to start animation, C to clear points
 fn key_pressed(app: &App, model: &mut Model, key: Key) {
     match key {
         Key::Escape => {
