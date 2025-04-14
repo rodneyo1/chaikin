@@ -68,8 +68,16 @@ fn view(app: &App, model: &Model, frame: Frame) {
     match model.animation_state {
         AnimationState::Drawing => {
             // Draw the control points
-            for point in &model.points {
-                draw.ellipse().xy(*point).radius(5.0).color(WHITE);
+            for (i, point) in model.points.iter().enumerate() {
+                // Use a different color for the point being dragged
+                let color = if model.dragging_point_index == Some(i) {
+                    BLUE
+                } else {
+                    WHITE
+                };
+                
+                // Make the points slightly larger and easier to grab
+                draw.ellipse().xy(*point).radius(5.0).color(color);
             }
 
             // Connect points with lines if more than 1 point
@@ -84,7 +92,7 @@ fn view(app: &App, model: &Model, frame: Frame) {
             }
 
             // Display instructions
-            draw.text("Click to add points. Press Enter to start animation. Escape to quit.")
+            draw.text("Click to add points. Drag to move points. Press Enter to start animation. Escape to quit.")
                 .xy(Point2::new(0.0, -app.window_rect().h() / 2.0 + 20.0))
                 .color(WHITE);
 
@@ -93,11 +101,19 @@ fn view(app: &App, model: &Model, frame: Frame) {
                     .xy(Point2::new(0.0, app.window_rect().h() / 2.0 - 40.0))
                     .color(YELLOW);
             }
-        }
+        },
         AnimationState::Animating => {
-            // Show original points as small circles
-            for point in &model.points {
-                draw.ellipse().xy(*point).radius(3.0).color(GRAY);
+            // Show original points as small circles, with draggable highlighting
+            for (i, point) in model.points.iter().enumerate() {
+                // Use a different color for the point being dragged
+                let color = if model.dragging_point_index == Some(i) {
+                    BLUE
+                } else {
+                    GRAY
+                };
+                
+                // Make the control points slightly larger in animation mode too
+                draw.ellipse().xy(*point).radius(5.0).color(color);
             }
 
             // Connect original points with thin gray lines
@@ -162,7 +178,7 @@ fn view(app: &App, model: &Model, frame: Frame) {
             .xy(Point2::new(0.0, -app.window_rect().h() / 2.0 + 20.0))
             .color(WHITE);
 
-            draw.text("Press Escape to quit. Press C to clear and draw new points.")
+            draw.text("Press Escape to quit. Press C to clear and draw new points. Drag points to modify curve.")
                 .xy(Point2::new(0.0, -app.window_rect().h() / 2.0 + 40.0))
                 .color(WHITE);
         }
@@ -173,12 +189,41 @@ fn view(app: &App, model: &Model, frame: Frame) {
 
 // Handle mouse presses: Add points to the model
 fn mouse_pressed(app: &App, model: &mut Model, button: MouseButton) {
-    if app.window_id() == model.window_id // Ensure we're in the correct window
-        && button == MouseButton::Left
-        && model.animation_state == AnimationState::Drawing
-    {
-        let position = app.mouse.position();
-        model.points.push(position);
+    if app.window_id() != model.window_id {
+        return;
+    }
+    
+    let position = app.mouse.position();
+    model.mouse_position = position;
+    
+    if button == MouseButton::Left {
+        // In drawing state, either add new point or start dragging existing point
+        if model.animation_state == AnimationState::Drawing {
+            // Check if we're clicking near an existing point
+            for (i, point) in model.points.iter().enumerate() {
+                let distance = position.distance(*point);
+                if distance < 10.0 {  // 10 pixel threshold for selection
+                    // Start dragging this point
+                    model.dragging_point_index = Some(i);
+                    return;
+                }
+            }
+            
+            // If not dragging, add a new point
+            model.points.push(position);
+        } 
+        // In animation state, allow dragging points too
+        else if model.animation_state == AnimationState::Animating {
+            // Check if we're clicking near an existing point
+            for (i, point) in model.points.iter().enumerate() {
+                let distance = position.distance(*point);
+                if distance < 10.0 {  // 10 pixel threshold for selection
+                    // Start dragging this point
+                    model.dragging_point_index = Some(i);
+                    return;
+                }
+            }
+        }
     }
 }
 
@@ -188,7 +233,7 @@ fn mouse_released(_app: &App, model: &mut Model, _button: MouseButton) {
 }
 
 // mouse_moved function to handle dragging points
-fn mouse_moved(app: &App, model: &mut Model, _event: MouseMoved) {
+fn mouse_moved(app: &App, model: &mut Model, _event: Vec2) {
     // Update current mouse position
     model.mouse_position = app.mouse.position();
     
