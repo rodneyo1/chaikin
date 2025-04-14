@@ -8,7 +8,7 @@ Chaikin's algorithm is a recursive subdivision technique that progressively smoo
 
 1. Place control points on a canvas
 2. Watch an animated progression of the algorithm through 7 steps
-3. See how a jagged polyline transforms into a smooth curve
+3. Observe the transition from a rough line to a smooth one.
 
 ## Features
 
@@ -17,7 +17,7 @@ Chaikin's algorithm is a recursive subdivision technique that progressively smoo
 - **Special Case Handling**: Properly handles scenarios with 1 or 2 points
 - **Caching Mechanism**: Efficiently computes and stores intermediate steps
 - **User Controls**:
-  - `Left Mouse Button`: Add control points (in Drawing mode)
+  - `Left Mouse Button`: Add and drag control points (in Drawing mode)
   - `Enter`: Start animation (requires at least one point)
   - `Escape`: Quit the application
   - `C`: Clear points and return to Drawing mode
@@ -51,7 +51,7 @@ For each step of Chaikin's algorithm:
 ### Prerequisites
 
 - Rust and Cargo
-- Nannou dependencies (varies by platform)
+- Nannou dependencies
 
 ### Installation
 
@@ -62,4 +62,3 @@ For each step of Chaikin's algorithm:
 ## Usage Tips
 
 - Add at least 3 points for meaningful curve generation
-- For complex shapes, place points in a closed loop
