@@ -4,6 +4,8 @@ mod model;
 
 use chaikin::ChaikinAlgorithm;
 use model::{AnimationState, Model};
+use nannou::event::MouseButton;
+use std::f32;
 
 fn main() {
     nannou::app(model).update(update).run();
@@ -16,6 +18,8 @@ fn model(app: &App) -> Model {
         .size(800, 600)
         .view(view)
         .mouse_pressed(mouse_pressed)
+        .mouse_released(mouse_released)
+        .mouse_moved(mouse_moved)
         .key_pressed(key_pressed)
         .build()
         .unwrap();
@@ -28,8 +32,11 @@ fn model(app: &App) -> Model {
         animation_step: 0,
         animation_timer: 0.0,
         steps_computed: false,
+        dragging_point_index: None,
+        mouse_position: pt2(0.0, 0.0),
     }
 }
+
 
 // Update function to handle animation. This function is called every frame and is responsible for updating the model's state
 fn update(_app: &App, model: &mut Model, update: Update) {

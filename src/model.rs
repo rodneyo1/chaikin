@@ -15,4 +15,6 @@ pub struct Model {
     pub animation_step: usize,
     pub animation_timer: f32,
     pub steps_computed: bool, // Flag to track if we've precomputed the steps
+    pub dragging_point_index: Option<usize>, // Index of point being dragged, if any
+    pub mouse_position: Point2, // Current mouse position
 }
