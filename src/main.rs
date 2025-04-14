@@ -9,7 +9,7 @@ fn main() {
     nannou::app(model).update(update).run();
 }
 
-// Model function to create the initial state of the application(called at start)
+// Model function to create the initial state of the application (called at start)
 fn model(app: &App) -> Model {
     let window_id = app
         .new_window()
@@ -20,7 +20,7 @@ fn model(app: &App) -> Model {
         .build()
         .unwrap();
 
-    Model { 
+    Model {
         window_id,
         points: Vec::new(),
         algorithm: ChaikinAlgorithm::new(),
@@ -33,17 +33,13 @@ fn model(app: &App) -> Model {
 
 // Update function to handle animation. This function is called every frame and is responsible for updating the model's state
 fn update(_app: &App, model: &mut Model, update: Update) {
-    // Only process if we're in animation state
     if model.animation_state == AnimationState::Animating {
-        // Update timer
         model.animation_timer += update.since_last.as_secs_f32();
 
-        // Change step every second
         if model.animation_timer >= 1.0 {
             model.animation_timer = 0.0;
             model.animation_step += 1;
 
-            // Restart animation after 7 steps
             if model.animation_step > 7 {
                 model.animation_step = 0;
             }
@@ -51,16 +47,15 @@ fn update(_app: &App, model: &mut Model, update: Update) {
     }
 }
 
+// View function to render visuals. Called every frame.
 fn view(app: &App, model: &Model, frame: Frame) {
     let draw = app.draw();
 
-    // Clear the background
     draw.background().color(BLACK);
 
-    // Draw based on current state
     match model.animation_state {
         AnimationState::Drawing => {
-            // Draw the control points
+            // Draw control points
             for point in &model.points {
                 draw.ellipse().xy(*point).radius(5.0).color(WHITE);
             }
@@ -106,14 +101,12 @@ fn view(app: &App, model: &Model, frame: Frame) {
 
             // Special case for 1 or 2 points
             if model.points.len() == 1 {
-                // Just show the point
                 draw.ellipse().xy(model.points[0]).radius(5.0).color(RED);
 
                 draw.text("Only one point - no curve to generate")
                     .xy(Point2::new(0.0, app.window_rect().h() / 2.0 - 40.0))
                     .color(YELLOW);
             } else if model.points.len() == 2 {
-                // Draw a line between the two points
                 draw.line()
                     .start(model.points[0])
                     .end(model.points[1])
@@ -129,7 +122,6 @@ fn view(app: &App, model: &Model, frame: Frame) {
                     .algorithm
                     .get_curve_at_step(&model.points, model.animation_step);
 
-                // Draw the current state of the curve
                 if curve.len() > 1 {
                     // Draw lines connecting the curve points
                     for i in 0..curve.len() - 1 {
@@ -189,7 +181,6 @@ fn key_pressed(app: &App, model: &mut Model, key: Key) {
 
                 // Pre-compute all steps for the animation
                 if model.points.len() > 2 {
-                    // Force computation of all steps
                     for step in 1..=7 {
                         model.algorithm.get_curve_at_step(&model.points, step);
                     }
@@ -198,12 +189,10 @@ fn key_pressed(app: &App, model: &mut Model, key: Key) {
             }
         }
         Key::C => {
-            // Clear all points and reset to drawing state
             model.points.clear();
             model.animation_state = AnimationState::Drawing;
             model.animation_step = 0;
             model.animation_timer = 0.0;
-            // Create new algorithm instance to clear cache
             model.algorithm = ChaikinAlgorithm::new();
             model.steps_computed = false;
         }
