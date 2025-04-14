@@ -1,9 +1,11 @@
 use nannou::prelude::*;
 mod chaikin;
 mod model;
+mod interactions;
 
 use chaikin::ChaikinAlgorithm;
 use model::{AnimationState, Model};
+use interactions::{mouse_pressed, mouse_released, mouse_moved, key_pressed};
 
 fn main() {
     nannou::app(model).update(update).run();
@@ -16,6 +18,8 @@ fn model(app: &App) -> Model {
         .size(800, 600)
         .view(view)
         .mouse_pressed(mouse_pressed)
+        .mouse_released(mouse_released)
+        .mouse_moved(mouse_moved)
         .key_pressed(key_pressed)
         .build()
         .unwrap();
@@ -28,6 +32,8 @@ fn model(app: &App) -> Model {
         animation_step: 0,
         animation_timer: 0.0,
         steps_computed: false,
+        dragging_point_index: None,
+        mouse_position: pt2(0.0, 0.0),
     }
 }
 
@@ -55,9 +61,17 @@ fn view(app: &App, model: &Model, frame: Frame) {
 
     match model.animation_state {
         AnimationState::Drawing => {
-            // Draw control points
-            for point in &model.points {
-                draw.ellipse().xy(*point).radius(5.0).color(WHITE);
+            // Draw the control points
+            for (i, point) in model.points.iter().enumerate() {
+                // Use a different color for the point being dragged
+                let color = if model.dragging_point_index == Some(i) {
+                    BLUE
+                } else {
+                    WHITE
+                };
+                
+                // Make the points slightly larger and easier to grab
+                draw.ellipse().xy(*point).radius(5.0).color(color);
             }
 
             // Connect points with lines if more than 1 point
@@ -72,7 +86,7 @@ fn view(app: &App, model: &Model, frame: Frame) {
             }
 
             // Display instructions
-            draw.text("Click to add points. Press Enter to start animation. Escape to quit.")
+            draw.text("Click to add points. Drag to move points. Press Enter to start animation. Escape to quit.")
                 .xy(Point2::new(0.0, -app.window_rect().h() / 2.0 + 20.0))
                 .color(WHITE);
 
@@ -81,11 +95,19 @@ fn view(app: &App, model: &Model, frame: Frame) {
                     .xy(Point2::new(0.0, app.window_rect().h() / 2.0 - 40.0))
                     .color(YELLOW);
             }
-        }
+        },
         AnimationState::Animating => {
-            // Show original points as small circles
-            for point in &model.points {
-                draw.ellipse().xy(*point).radius(3.0).color(GRAY);
+            // Show original points as small circles, with draggable highlighting
+            for (i, point) in model.points.iter().enumerate() {
+                // Use a different color for the point being dragged
+                let color = if model.dragging_point_index == Some(i) {
+                    BLUE
+                } else {
+                    GRAY
+                };
+                
+                // Make the control points slightly larger in animation mode too
+                draw.ellipse().xy(*point).radius(5.0).color(color);
             }
 
             // Connect original points with thin gray lines
@@ -147,55 +169,11 @@ fn view(app: &App, model: &Model, frame: Frame) {
             .xy(Point2::new(0.0, -app.window_rect().h() / 2.0 + 20.0))
             .color(WHITE);
 
-            draw.text("Press Escape to quit. Press C to clear and draw new points.")
+            draw.text("Press Escape to quit. Press C to clear and draw new points. Drag points to modify curve.")
                 .xy(Point2::new(0.0, -app.window_rect().h() / 2.0 + 40.0))
                 .color(WHITE);
         }
     }
 
     draw.to_frame(app, &frame).unwrap(); // Render the frame
-}
-
-// Handle mouse presses: Add points to the model
-fn mouse_pressed(app: &App, model: &mut Model, button: MouseButton) {
-    if app.window_id() == model.window_id // Ensure we're in the correct window
-        && button == MouseButton::Left
-        && model.animation_state == AnimationState::Drawing
-    {
-        let position = app.mouse.position();
-        model.points.push(position);
-    }
-}
-
-// Handle key presses: Escape to quit, Enter to start animation, C to clear points
-fn key_pressed(app: &App, model: &mut Model, key: Key) {
-    match key {
-        Key::Escape => {
-            app.quit();
-        }
-        Key::Return => {
-            if model.points.len() >= 1 && model.animation_state == AnimationState::Drawing {
-                model.animation_state = AnimationState::Animating;
-                model.animation_step = 0;
-                model.animation_timer = 0.0;
-
-                // Pre-compute all steps for the animation
-                if model.points.len() > 2 {
-                    for step in 1..=7 {
-                        model.algorithm.get_curve_at_step(&model.points, step);
-                    }
-                }
-                model.steps_computed = true;
-            }
-        }
-        Key::C => {
-            model.points.clear();
-            model.animation_state = AnimationState::Drawing;
-            model.animation_step = 0;
-            model.animation_timer = 0.0;
-            model.algorithm = ChaikinAlgorithm::new();
-            model.steps_computed = false;
-        }
-        _ => {}
-    }
 }
