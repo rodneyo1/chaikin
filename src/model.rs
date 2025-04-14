@@ -32,7 +32,7 @@ pub struct Model {
 
     /// Timer used to control the interval between animation steps.
     pub animation_timer: f32,
-
-    /// Indicates whether the algorithm steps have been precomputed.
-    pub steps_computed: bool,
+    pub steps_computed: bool, // Flag to track if we've precomputed the steps
+    pub dragging_point_index: Option<usize>, // Index of point being dragged, if any
+    pub mouse_position: Point2, // Current mouse position
 }
