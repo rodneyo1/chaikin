@@ -1,7 +1,10 @@
 use nannou::prelude::*;
+
+// Internal modules
 mod chaikin;
 mod model;
 
+// Re-exports
 use chaikin::ChaikinAlgorithm;
 use model::{AnimationState, Model};
 
