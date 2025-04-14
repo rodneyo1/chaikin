@@ -5,7 +5,6 @@ mod model;
 use chaikin::ChaikinAlgorithm;
 use model::{AnimationState, Model};
 use nannou::event::MouseButton;
-use std::f32;
 
 fn main() {
     nannou::app(model).update(update).run();
