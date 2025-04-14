@@ -182,6 +182,40 @@ fn mouse_pressed(app: &App, model: &mut Model, button: MouseButton) {
     }
 }
 
+// mouse_released function to handle when a point is released
+fn mouse_released(_app: &App, model: &mut Model, _button: MouseButton) {
+    model.dragging_point_index = None;
+}
+
+// mouse_moved function to handle dragging points
+fn mouse_moved(app: &App, model: &mut Model, _event: MouseMoved) {
+    // Update current mouse position
+    model.mouse_position = app.mouse.position();
+    
+    // If we're dragging a point, update its position
+    if let Some(index) = model.dragging_point_index {
+        if index < model.points.len() {
+            model.points[index] = model.mouse_position;
+            
+            // If we're in animation mode, recompute the steps
+            if model.animation_state == AnimationState::Animating && model.points.len() > 2 {
+                // Reset animation to step 0
+                model.animation_step = 0;
+                model.animation_timer = 0.0;
+                
+                // Create new algorithm instance to clear cache
+                model.algorithm = ChaikinAlgorithm::new();
+                
+                // Force computation of all steps
+                for step in 1..=7 {
+                    model.algorithm.get_curve_at_step(&model.points, step);
+                }
+                model.steps_computed = true;
+            }
+        }
+    }
+}
+
 // Handle key presses: Escape to quit, Enter to start animation, C to clear points
 fn key_pressed(app: &App, model: &mut Model, key: Key) {
     match key {
