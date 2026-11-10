@@ -2,7 +2,7 @@
 
 ![Chaikin demo: placing control points, then smoothing steps 0 to 7](assets/chaikin-demo.gif)
 
-This application provides an interactive visualization of Chaikin's corner-cutting algorithm, a technique used to create smooth curves from a set of control points.
+A desktop GUI app written in Rust with [Nannou](https://nannou.cc/). It opens an 800x600 window where you click to place points, drag them around and press Enter to animate. It provides an interactive visualization of Chaikin's corner-cutting algorithm, a technique used to create smooth curves from a set of control points.
 
 ## Overview
 
