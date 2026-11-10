@@ -1,5 +1,7 @@
 # Chaikin's Algorithm Visualization
 
+![Chaikin demo: placing control points, then smoothing steps 0 to 7](assets/chaikin-demo.gif)
+
 This application provides an interactive visualization of Chaikin's corner-cutting algorithm, a technique used to create smooth curves from a set of control points.
 
 ## Overview
